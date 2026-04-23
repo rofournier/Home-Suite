@@ -1,4 +1,4 @@
-const CACHE_NAME = "watchlist-shell-v2";
+const CACHE_NAME = "watchlist-shell-v3";
 const APP_SHELL = [
   "/watchlist/",
   "/watchlist/index.html",

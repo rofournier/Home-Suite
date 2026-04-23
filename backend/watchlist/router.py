@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime
 
 from fastapi import APIRouter, HTTPException
@@ -12,12 +13,33 @@ from watchlist.schemas import MovieCreate, MovieUpdate
 router = APIRouter()
 
 
+def _serialize_genres(genres: list[str]) -> str:
+    return json.dumps(genres, ensure_ascii=False)
+
+
+def _deserialize_genres(raw: str | None) -> list[str]:
+    """Parse genres from the DB column.
+    Handles both the new JSON format and old plain-string values."""
+    if not raw:
+        return []
+    try:
+        parsed = json.loads(raw)
+        if isinstance(parsed, list):
+            return [str(g).strip() for g in parsed if str(g).strip()]
+        # Stored as a bare JSON string (e.g. "\"Action\"")
+        return [str(parsed).strip()] if str(parsed).strip() else []
+    except (json.JSONDecodeError, ValueError):
+        # Legacy plain string  →  wrap in list
+        stripped = raw.strip()
+        return [stripped] if stripped else []
+
+
 def serialize_movie(movie: Movie) -> dict:
     return {
         "id": movie.id,
         "title": movie.title,
         "kind": movie.kind,
-        "genre": movie.genre,
+        "genres": _deserialize_genres(movie.genre),
         "rating": movie.rating,
         "watched": movie.watched,
         "created_at": movie.created_at.isoformat(),
@@ -38,7 +60,7 @@ async def create_movie(payload: MovieCreate) -> dict:
         movie = Movie(
             title=payload.title,
             kind=payload.kind,
-            genre=payload.genre,
+            genre=_serialize_genres(payload.genres),
             rating=payload.rating,
             watched=payload.watched,
             created_at=datetime.utcnow(),
@@ -61,10 +83,8 @@ async def update_movie(movie_id: str, payload: MovieUpdate) -> dict:
             movie.title = payload.title
         if payload.kind is not None:
             movie.kind = payload.kind
-        if payload.clear_genre:
-            movie.genre = None
-        elif payload.genre is not None:
-            movie.genre = payload.genre
+        if payload.genres is not None:
+            movie.genre = _serialize_genres(payload.genres)
         if payload.clear_rating:
             movie.rating = None
         elif payload.rating is not None:
