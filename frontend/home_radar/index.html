@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0f1e" />
+    <title>HomeRadar</title>
+    <link rel="manifest" href="/home-radar/manifest.webmanifest" />
+    <link rel="stylesheet" href="/home-radar/style.css" />
+  </head>
+  <body>
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+    <header class="top-ui">
+      <div id="connection-pill" class="pill offline">
+        <span class="dot"></span>
+        <span id="connection-text">Offline</span>
+      </div>
+      <select id="background-select" class="bg-select" aria-label="Choix du background">
+        <option value="space">Space Travel</option>
+        <option value="sky">Blue Sky</option>
+        <option value="ocean">Deep Ocean</option>
+        <option value="aurora">Aurora</option>
+      </select>
+    </header>
+
+    <main id="viewport">
+      <div id="map-stage">
+        <img id="plan-image" src="/home-radar/home_plan.png" alt="Plan de l'appartement" draggable="false" />
+        <div id="markers-layer"></div>
+      </div>
+    </main>
+
+    <aside id="drawer-backdrop" class="drawer-backdrop hidden"></aside>
+    <aside id="event-drawer" class="drawer" aria-hidden="true">
+      <div class="drawer-handle"></div>
+      <h2>Nouvelle tâche</h2>
+      <p class="drawer-subtitle">Choisis le type puis l'urgence</p>
+
+      <div id="type-grid" class="type-grid"></div>
+
+      <div class="urgency-group">
+        <button class="urgency-btn active" data-urgency="1" type="button">●○○</button>
+        <button class="urgency-btn" data-urgency="2" type="button">●●○</button>
+        <button class="urgency-btn" data-urgency="3" type="button">●●●</button>
+      </div>
+
+      <button id="add-task-btn" class="primary-btn" type="button">Ajouter</button>
+      <button id="cancel-btn" class="ghost-btn" type="button">Annuler</button>
+    </aside>
+
+    <aside id="done-drawer" class="drawer" aria-hidden="true">
+      <div class="drawer-handle"></div>
+      <h2>Tâche terminée ?</h2>
+      <p id="done-task-label" class="drawer-subtitle">Confirmer la suppression</p>
+      <button id="confirm-done-btn" class="primary-btn" type="button">Marquer comme fait</button>
+      <button id="cancel-done-btn" class="ghost-btn" type="button">Annuler</button>
+    </aside>
+
+    <a href="/" class="back-home" title="Menu">⌂</a>
+
+    <script type="module" src="/home-radar/app.js"></script>
+  </body>
+</html>

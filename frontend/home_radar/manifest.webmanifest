@@ -1,0 +1,19 @@
+{
+  "name": "HomeRadar",
+  "short_name": "HomeRadar",
+  "description": "Suivi collaboratif des tâches maison sur plan interactif.",
+  "start_url": "/home-radar/",
+  "scope": "/home-radar/",
+  "display": "standalone",
+  "background_color": "#080b16",
+  "theme_color": "#0a0f1e",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/home-radar/home_plan.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

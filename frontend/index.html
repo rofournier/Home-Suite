@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home Suite</title>
+    <meta name="theme-color" content="#f4a261" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Home Suite" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg: #fdf6ee;
+        --text: #2d1f0e;
+        --muted: #9a7c5e;
+        --radar-bg: #dbeafe;
+        --radar-bg-hover: #bfdbfe;
+        --radar-border: #93c5fd;
+        --radar-icon-bg: #eff6ff;
+        --notes-bg: #fef9c3;
+        --notes-bg-hover: #fef08a;
+        --notes-border: #fde68a;
+        --notes-icon-bg: #fffbeb;
+        --shadow: 0 2px 12px rgba(180, 130, 80, 0.13);
+        --shadow-hover: 0 8px 32px rgba(180, 130, 80, 0.22);
+      }
+
+      html, body {
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .page {
+        min-height: 100svh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2.5rem 1.25rem;
+        gap: 2rem;
+      }
+
+      .logo {
+        font-size: 2.6rem;
+        line-height: 1;
+        user-select: none;
+      }
+
+      h1 {
+        font-size: clamp(1.75rem, 5vw, 2.4rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: #b05a1e;
+      }
+
+      .grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        max-width: 360px;
+      }
+
+      .card {
+        display: flex;
+        align-items: center;
+        gap: 1.1rem;
+        padding: 1.4rem 1.5rem;
+        border-radius: 20px;
+        border: 1.5px solid transparent;
+        text-decoration: none;
+        color: var(--text);
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        box-shadow: var(--shadow);
+        -webkit-tap-highlight-color: transparent;
+        cursor: pointer;
+        outline: none;
+        user-select: none;
+      }
+
+      .card:focus-visible {
+        outline: 3px solid #f4a261;
+        outline-offset: 3px;
+      }
+
+      .card--radar {
+        background: var(--radar-bg);
+        border-color: var(--radar-border);
+      }
+
+      .card--notes {
+        background: var(--notes-bg);
+        border-color: var(--notes-border);
+      }
+
+      @media (hover: hover) {
+        .card--radar:hover {
+          background: var(--radar-bg-hover);
+          transform: translateY(-2px) scale(1.01);
+          box-shadow: var(--shadow-hover);
+        }
+        .card--notes:hover {
+          background: var(--notes-bg-hover);
+          transform: translateY(-2px) scale(1.01);
+          box-shadow: var(--shadow-hover);
+        }
+      }
+
+      .card:active {
+        transform: scale(0.97);
+        box-shadow: var(--shadow);
+      }
+
+      .card-icon-wrap {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        flex-shrink: 0;
+      }
+
+      .card--radar .card-icon-wrap { background: var(--radar-icon-bg); }
+      .card--notes .card-icon-wrap { background: var(--notes-icon-bg); }
+
+      .card-label {
+        font-size: 1.2rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        flex: 1;
+      }
+
+      .card-arrow {
+        font-size: 1.1rem;
+        color: var(--muted);
+        transition: transform 0.15s;
+      }
+
+      @media (hover: hover) {
+        .card:hover .card-arrow { transform: translateX(3px); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="logo">🏠</div>
+      <h1>Home Suite</h1>
+
+      <nav class="grid" aria-label="Applications">
+        <a href="/home-radar/" class="card card--radar">
+          <div class="card-icon-wrap">🗺️</div>
+          <span class="card-label">HomeRadar</span>
+          <span class="card-arrow">›</span>
+        </a>
+        <a href="/notes/" class="card card--notes">
+          <div class="card-icon-wrap">🛒</div>
+          <span class="card-label">Courses</span>
+          <span class="card-arrow">›</span>
+        </a>
+      </nav>
+    </div>
+
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+      }
+    </script>
+  </body>
+</html>

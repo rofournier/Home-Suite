@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notes Courses Live</title>
+    <meta name="theme-color" content="#fffdf3" />
+    <link rel="manifest" href="/notes/manifest.webmanifest" />
+    <link rel="stylesheet" href="/notes/styles/notepad.css" />
+  </head>
+  <body>
+    <main class="notepad">
+      <header class="notepad__header">
+        <div class="presence-inline" aria-label="Utilisateurs connectés">
+          <div id="presence-avatars" class="presence-avatars"></div>
+          <span id="presence" class="presence">1</span>
+        </div>
+        <h1>Courses</h1>
+        <button id="global-alarm-btn" class="alarm-btn" title="Alerter tout le monde" aria-label="Alerter tout le monde">🔔</button>
+      </header>
+
+      <section id="lines" class="lines" aria-label="Liste de courses"></section>
+    </main>
+
+    <a href="/" class="back-home" title="Menu">⌂</a>
+
+    <script type="module" src="/notes/js/main.js"></script>
+  </body>
+</html>

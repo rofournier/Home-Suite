@@ -1,0 +1,26 @@
+{
+  "name": "Home Suite",
+  "short_name": "Home Suite",
+  "description": "Tes outils maison au même endroit.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fdf6ee",
+  "theme_color": "#f4a261",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
