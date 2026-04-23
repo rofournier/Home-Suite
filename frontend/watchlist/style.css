@@ -270,6 +270,37 @@ h1 {
   color: #fff;
 }
 
+/* ─── Genre autocomplete dropdown ───────────────────── */
+
+.genre-ac {
+  position: fixed;
+  z-index: 8000;
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem 0;
+  background: #2a1842;
+  border: 1px solid #5d3b8a;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.genre-ac-item {
+  padding: 0.6rem 0.85rem;
+  font-size: 0.82rem;
+  color: #ddc8ff;
+  cursor: pointer;
+  border-radius: 7px;
+  margin: 0 0.25rem;
+}
+
+.genre-ac-item:hover,
+.genre-ac-item:active {
+  background: rgba(106, 54, 176, 0.5);
+  color: #fff;
+}
+
 .gtag-input {
   border: none;
   outline: none;

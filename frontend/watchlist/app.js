@@ -190,7 +190,7 @@ function starsHtml(rating) {
 
 // ─── Genre tag input helpers ──────────────────────────────────────────────────
 
-function genreTagInputHtml(movie, datalistId, disabled) {
+function genreTagInputHtml(movie, _datalistId, disabled) {
   const genres = getGenres(movie);
   const chips = genres
     .map(
@@ -201,13 +201,73 @@ function genreTagInputHtml(movie, datalistId, disabled) {
     .join("");
   const placeholder = genres.length === 0 ? "Genre…" : "+";
   return (
-    `<div class="genre-tag-input"${disabled ? "" : ""} data-movie-id="${escapeHtml(movie.id)}">` +
+    `<div class="genre-tag-input" data-movie-id="${escapeHtml(movie.id)}">` +
     chips +
     (disabled
       ? ""
-      : `<input class="gtag-input" list="${datalistId}" placeholder="${placeholder}" autocomplete="off" />`) +
+      : `<input class="gtag-input" placeholder="${placeholder}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />`) +
     "</div>"
   );
+}
+
+// ─── Custom genre autocomplete (replaces <datalist> — not supported on iOS) ───
+
+let _acDropdown = null;
+
+function _getAcDropdown() {
+  if (!_acDropdown) {
+    _acDropdown = document.createElement("ul");
+    _acDropdown.className = "genre-ac";
+    _acDropdown.setAttribute("role", "listbox");
+    _acDropdown.hidden = true;
+    document.body.appendChild(_acDropdown);
+  }
+  return _acDropdown;
+}
+
+function hideAc() {
+  const el = _getAcDropdown();
+  el.hidden = true;
+  el.innerHTML = "";
+}
+
+function showAc(input, movieId) {
+  const dropdown = _getAcDropdown();
+  const typed = input.value.toLowerCase().trim();
+  const movie = state.movies.find((m) => m.id === movieId);
+  const current = getGenres(movie || {});
+
+  const suggestions = allGenreOptions().filter(
+    (g) => !current.includes(g) && (typed === "" || g.toLowerCase().includes(typed)),
+  );
+
+  if (suggestions.length === 0) {
+    hideAc();
+    return;
+  }
+
+  dropdown.innerHTML = suggestions
+    .map((g) => `<li class="genre-ac-item" role="option">${escapeHtml(g)}</li>`)
+    .join("");
+
+  // Fixed position below the input — works regardless of scroll context
+  const rect = input.getBoundingClientRect();
+  dropdown.style.top = `${rect.bottom + 4}px`;
+  dropdown.style.left = `${rect.left}px`;
+  dropdown.style.minWidth = `${Math.max(rect.width, 120)}px`;
+  dropdown.hidden = false;
+
+  dropdown.querySelectorAll(".genre-ac-item").forEach((item) => {
+    const pick = (e) => {
+      e.preventDefault();
+      const genre = item.textContent;
+      input.value = "";
+      hideAc();
+      addGenreToMovie(movieId, genre);
+    };
+    item.addEventListener("mousedown", pick);
+    item.addEventListener("touchend", pick, { passive: false });
+  });
 }
 
 /** Update chips in-place without destroying the text input (preserves focus). */
@@ -300,12 +360,17 @@ function bindGenreTagInput(row, movie) {
   const input = container.querySelector(".gtag-input");
   if (!input) return;
 
+  input.addEventListener("focus", () => showAc(input, movieId));
+
+  input.addEventListener("input", () => showAc(input, movieId));
+
   input.addEventListener("keydown", (e) => {
     if ((e.key === "Enter" || e.key === ",") && input.value.trim()) {
       e.preventDefault();
       const genre = input.value.trim().replace(/,+$/, "").trim();
       if (genre) {
         input.value = "";
+        hideAc();
         addGenreToMovie(movieId, genre);
       }
     }
@@ -317,11 +382,15 @@ function bindGenreTagInput(row, movie) {
   });
 
   input.addEventListener("blur", () => {
-    const genre = input.value.trim().replace(/,+$/, "").trim();
-    if (genre) {
-      input.value = "";
-      addGenreToMovie(movieId, genre);
-    }
+    // Small delay so touchend on a suggestion fires before blur hides the dropdown
+    setTimeout(() => {
+      hideAc();
+      const genre = input.value.trim().replace(/,+$/, "").trim();
+      if (genre) {
+        input.value = "";
+        addGenreToMovie(movieId, genre);
+      }
+    }, 150);
   });
 }
 
@@ -450,8 +519,7 @@ function renderRows(container, movies, datalistId) {
 
 function render() {
   const datalistId = "genres-list";
-  const options = allGenreOptions();
-  listEl.innerHTML = `<datalist id="${datalistId}">${options.map((g) => `<option value="${escapeHtml(g)}"></option>`).join("")}</datalist>`;
+  listEl.innerHTML = "";
 
   const movies = sortedMovies(filteredMovies());
   if (movies.length === 0) {
