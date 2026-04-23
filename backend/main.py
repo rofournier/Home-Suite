@@ -57,6 +57,31 @@ async def root_manifest() -> FileResponse:
     return FileResponse(FRONTEND_DIR / "manifest.webmanifest", media_type="application/manifest+json")
 
 
+@app.get("/legacy")
+async def homepage_legacy() -> FileResponse:
+    return FileResponse(FRONTEND_DIR / "index_legacy.html")
+
+
+@app.get("/home.png")
+async def root_home_png() -> FileResponse:
+    return FileResponse(FRONTEND_DIR / "home.png", media_type="image/png")
+
+
+@app.get("/home.js")
+async def root_home_js() -> FileResponse:
+    return FileResponse(FRONTEND_DIR / "home.js", media_type="application/javascript")
+
+
+@app.get("/weather.js")
+async def root_weather_js() -> FileResponse:
+    return FileResponse(FRONTEND_DIR / "weather.js", media_type="application/javascript")
+
+
+@app.get("/weather-bg.js")
+async def root_weather_bg_js() -> FileResponse:
+    return FileResponse(FRONTEND_DIR / "weather-bg.js", media_type="application/javascript")
+
+
 # --- Static mounts (registered LAST) ---
 
 # Shared JS utilities (notifications, etc.)

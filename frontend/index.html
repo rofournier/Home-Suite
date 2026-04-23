@@ -4,196 +4,469 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home Suite</title>
-    <meta name="theme-color" content="#f4a261" />
+    <meta name="theme-color" content="#0d47a1" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Home Suite" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-      :root {
-        --bg: #fdf6ee;
-        --text: #2d1f0e;
-        --muted: #9a7c5e;
-        --radar-bg: #dbeafe;
-        --radar-bg-hover: #bfdbfe;
-        --radar-border: #93c5fd;
-        --radar-icon-bg: #eff6ff;
-        --notes-bg: #fef9c3;
-        --notes-bg-hover: #fef08a;
-        --notes-border: #fde68a;
-        --notes-icon-bg: #fffbeb;
-        --watch-bg: #e9d5ff;
-        --watch-bg-hover: #d8b4fe;
-        --watch-border: #c084fc;
-        --watch-icon-bg: #f5ebff;
-        --shadow: 0 2px 12px rgba(180, 130, 80, 0.13);
-        --shadow-hover: 0 8px 32px rgba(180, 130, 80, 0.22);
-      }
-
       html, body {
-        min-height: 100%;
-        background: var(--bg);
-        color: var(--text);
+        height: 100%;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
         -webkit-font-smoothing: antialiased;
+        color: #fff;
+        overflow: hidden; /* house fills the screen exactly */
       }
 
-      .page {
-        min-height: 100svh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 2.5rem 1.25rem;
-        gap: 2rem;
+      /* ── Weather background ─────────────────────────────── */
+
+      #weather-bg {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
       }
 
-      .logo {
-        font-size: 2.6rem;
-        line-height: 1;
-        user-select: none;
+      #sky {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, #1565c0, #42a5f5, #bbdefb);
+        transition: background 1.2s ease;
       }
 
-      h1 {
-        font-size: clamp(1.75rem, 5vw, 2.4rem);
-        font-weight: 700;
-        letter-spacing: -0.03em;
-        color: #b05a1e;
+      #cloud-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
       }
 
-      .grid {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        width: 100%;
-        max-width: 360px;
+      #particles {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
       }
 
-      .card {
-        display: flex;
-        align-items: center;
-        gap: 1.1rem;
-        padding: 1.4rem 1.5rem;
-        border-radius: 20px;
-        border: 1.5px solid transparent;
-        text-decoration: none;
-        color: var(--text);
-        transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-        box-shadow: var(--shadow);
-        -webkit-tap-highlight-color: transparent;
+      /* ── Clouds ─────────────────────────────────────────── */
+
+      .cloud {
+        position: absolute;
+        left: 0;
+        border-radius: 999px;
+        background: rgba(255,255,255,.78);
+        filter: blur(14px);
+        animation: cloudDrift linear infinite;
+        will-change: transform;
+      }
+      .cloud::before, .cloud::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        background: inherit;
+      }
+      .cloud::before { width: 46%; aspect-ratio: 1; top: -42%; left: 20%; }
+      .cloud::after  { width: 36%; aspect-ratio: 1; top: -28%; left: 52%; }
+      @keyframes cloudDrift {
+        from { transform: translateX(-35vw); }
+        to   { transform: translateX(125vw); }
+      }
+
+      /* ── Sun & Moon ─────────────────────────────────────── */
+
+      /* #sun-moon is a child of #sun-btn, centred inside it */
+      #sun-moon { position: relative; display: flex; align-items: center; justify-content: center; }
+
+      .sun {
+        width: 62px;
+        height: 62px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 38% 38%, #fff9c4, #ffd740, #ff8f00);
+        box-shadow: 0 0 36px 16px rgba(255,185,0,.44), 0 0 80px 42px rgba(255,120,0,.18);
+        animation: sunPulse 5s ease-in-out infinite;
+      }
+      @keyframes sunPulse {
+        0%,100% { transform: scale(1);    box-shadow: 0 0 36px 16px rgba(255,185,0,.44), 0 0 80px 42px rgba(255,120,0,.18); }
+        50%      { transform: scale(1.06); box-shadow: 0 0 52px 24px rgba(255,185,0,.54), 0 0 105px 58px rgba(255,120,0,.22); }
+      }
+
+      .moon {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 38% 38%, #f5f5e0, #e0e0c0, #c8c8a0);
+        box-shadow: 0 0 26px 11px rgba(220,220,170,.3), 0 0 58px 28px rgba(200,200,150,.13);
+        animation: moonGlow 7s ease-in-out infinite;
+      }
+      @keyframes moonGlow {
+        0%,100% { box-shadow: 0 0 26px 11px rgba(220,220,170,.3),  0 0 58px 28px rgba(200,200,150,.13); }
+        50%      { box-shadow: 0 0 40px 17px rgba(220,220,170,.38), 0 0 78px 40px rgba(200,200,150,.18); }
+      }
+
+      /* ── Sun button ─────────────────────────────────────── */
+
+      #sun-btn {
+        position: fixed;
+        top: max(env(safe-area-inset-top, 0.8rem), 0.8rem);
+        right: 1rem;
+        z-index: 30;
+        background: none;
+        border: none;
+        padding: 0;
         cursor: pointer;
-        outline: none;
-        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        /* Subtle ring to hint it's interactive — fades away after first visit */
+        border-radius: 50%;
+        transition: transform .2s;
+      }
+      #sun-btn:active { transform: scale(0.92); }
+
+      /* ── Weather panel ──────────────────────────────────── */
+
+      #weather-panel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 20;
+        padding: max(env(safe-area-inset-top, 1rem), 1rem) 1rem 0.9rem;
+        background: rgba(0,0,0,.35);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(255,255,255,.12);
+        transform-origin: top center;
+        /* shown/hidden via JS toggling hidden attribute + animation class */
       }
 
-      .card:focus-visible {
-        outline: 3px solid #f4a261;
-        outline-offset: 3px;
+      #weather-panel.panel-enter {
+        animation: panelIn .28s ease-out both;
+      }
+      #weather-panel.panel-exit {
+        animation: panelOut .22s ease-in both;
+      }
+      @keyframes panelIn  { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes panelOut { from { opacity: 1; transform: translateY(0); }     to { opacity: 0; transform: translateY(-12px); } }
+
+      .wi-main {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        /* Leave right side clear for sun-btn (fixed, ~80px) */
+        padding-right: 5rem;
       }
 
-      .card--radar {
-        background: var(--radar-bg);
-        border-color: var(--radar-border);
+      #w-icon { font-size: 1.8rem; line-height: 1; flex-shrink: 0; }
+
+      #w-temp {
+        font-size: 2.2rem;
+        font-weight: 200;
+        letter-spacing: -0.05em;
+        line-height: 1;
       }
 
-      .card--notes {
-        background: var(--notes-bg);
-        border-color: var(--notes-border);
+      .wi-right { display: flex; flex-direction: column; gap: 0.06rem; }
+
+      #w-desc  { font-size: 0.86rem; font-weight: 600; line-height: 1.2; }
+      #w-feels { font-size: 0.7rem;  opacity: 0.6; }
+
+      .wi-details {
+        display: flex;
+        gap: 0.8rem;
+        font-size: 0.76rem;
+        font-weight: 500;
+        opacity: 0.75;
+        margin-top: 0.45rem;
+        padding-right: 5rem;
       }
 
-      .card--watch {
-        background: var(--watch-bg);
-        border-color: var(--watch-border);
+      /* ── Forecast ───────────────────────────────────────── */
+
+      .forecast-section {
+        margin-top: 0.75rem;
+        background: rgba(0,0,0,.2);
+        border: 1px solid rgba(255,255,255,.1);
+        border-radius: 16px;
+        padding: 0.7rem 0.65rem;
       }
 
-      @media (hover: hover) {
-        .card--radar:hover {
-          background: var(--radar-bg-hover);
-          transform: translateY(-2px) scale(1.01);
-          box-shadow: var(--shadow-hover);
-        }
-        .card--notes:hover {
-          background: var(--notes-bg-hover);
-          transform: translateY(-2px) scale(1.01);
-          box-shadow: var(--shadow-hover);
-        }
-        .card--watch:hover {
-          background: var(--watch-bg-hover);
-          transform: translateY(-2px) scale(1.01);
-          box-shadow: var(--shadow-hover);
-        }
+      .forecast-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.55rem;
+        padding: 0 0.15rem;
       }
 
-      .card:active {
-        transform: scale(0.97);
-        box-shadow: var(--shadow);
+      .forecast-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        opacity: 0.6;
       }
 
-      .card-icon-wrap {
-        width: 3rem;
-        height: 3rem;
-        border-radius: 14px;
+      .metric-toggle {
+        border: 1px solid rgba(255,255,255,.22);
+        background: rgba(255,255,255,.1);
+        color: #fff;
+        border-radius: 999px;
+        padding: 0.2rem 0.6rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .forecast-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+      }
+
+      .nav-arrow {
+        flex-shrink: 0;
+        border: 1px solid rgba(255,255,255,.2);
+        background: rgba(255,255,255,.08);
+        color: #fff;
+        border-radius: 50%;
+        width: 1.7rem;
+        height: 1.7rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.6rem;
-        flex-shrink: 0;
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 0;
       }
 
-      .card--radar .card-icon-wrap { background: var(--radar-icon-bg); }
-      .card--notes .card-icon-wrap { background: var(--notes-icon-bg); }
-      .card--watch .card-icon-wrap { background: var(--watch-icon-bg); }
-
-      .card-label {
-        font-size: 1.2rem;
-        font-weight: 600;
-        letter-spacing: -0.01em;
+      #forecast-track {
+        display: flex;
+        gap: 0.35rem;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
         flex: 1;
       }
+      #forecast-track::-webkit-scrollbar { display: none; }
 
-      .card-arrow {
-        font-size: 1.1rem;
-        color: var(--muted);
-        transition: transform 0.15s;
+      .fc-day {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.18rem;
+        background: rgba(255,255,255,.09);
+        border-radius: 10px;
+        padding: 0.45rem 0.5rem;
+        min-width: 58px;
+        scroll-snap-align: start;
+      }
+      .fc-today { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.28); }
+      .fc-name  { font-size: 0.67rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; opacity: .7; }
+      .fc-icon  { font-size: 1.25rem; line-height: 1; }
+      .fc-val   { display: flex; gap: 0.28rem; align-items: baseline; font-size: 0.78rem; font-weight: 600; }
+      .fc-max   { opacity: 1; }
+      .fc-min   { opacity: 0.5; }
+      .fc-precip { font-size: 0.76rem; }
+      .fc-precip small { font-size: 0.6rem; opacity: .7; margin-left: 1px; }
+
+      /* ── House ──────────────────────────────────────────── */
+
+      .house-wrap {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: flex;
+        align-items: flex-end;   /* house sits at the bottom, sky above */
+        justify-content: center;
+        pointer-events: none;
       }
 
-      @media (hover: hover) {
-        .card:hover .card-arrow { transform: translateX(3px); }
+      /*
+       * .house-inner is sized to EXACTLY the image's aspect ratio (1000:970).
+       * This guarantees the SVG viewBox="0 0 1000 970" aligns pixel-perfectly
+       * with the rendered image at every screen size — no JS recalculation.
+       *
+       * Formula: the largest box that fits in the viewport while keeping 1000:970.
+       * Equivalent to object-fit:contain but for a container div.
+       */
+      .house-inner {
+        position: relative;
+        flex-shrink: 0;
+        width:  min(100vw, calc(100svh * 836 / 1036));
+        height: min(100svh, calc(100vw * 1036 / 836));
+        pointer-events: none;
+      }
+
+      #house-img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        /* No object-fit needed — container is already the exact right ratio */
+        user-select: none;
+        -webkit-user-drag: none;
+        pointer-events: none;
+      }
+
+      /* SVG overlay — inset 0 on .house-inner, which IS the image frame */
+      .house-map {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        overflow: visible;
+      }
+
+      /* ── Clickable zones ────────────────────────────────── */
+
+      .zone {
+        fill: rgba(255,220,80,.05);
+        cursor: pointer;
+        pointer-events: all;
+        transition: fill .3s, filter .3s;
+        animation: zoneGlow 3s ease-in-out infinite;
+      }
+
+      .zone:hover,
+      .zone:focus {
+        fill: rgba(255,220,80,.22);
+        filter: drop-shadow(0 0 16px rgba(255,200,0,.7));
+        outline: none;
+      }
+
+      .zone:active {
+        fill: rgba(255,220,80,.38);
+      }
+
+      /* ── Zone labels (shown on hover/focus) ─────── */
+
+      .zone-label {
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity .25s;
+        font-size: 1rem;
+        font-weight: 700;
+        fill: #fff;
+        paint-order: stroke fill;
+        stroke: rgba(0,0,0,.6);
+        stroke-width: 4px;
+        text-anchor: middle;
+        filter: drop-shadow(0 1px 4px rgba(0,0,0,.5));
+      }
+
+      .zone:hover + .zone-label,
+      .zone:focus + .zone-label {
+        opacity: 1;
+      }
+
+      @keyframes zoneGlow {
+        0%, 100% { fill: rgba(120,200,255,.06); filter: none; }
+        50%      { fill: rgba(120,200,255,.30); filter: drop-shadow(0 0 18px rgba(80,180,255,.85)) drop-shadow(0 0 6px rgba(255,255,255,.4)); }
       }
     </style>
   </head>
-  <body>
-    <div class="page">
-      <div class="logo">🏠</div>
-      <h1>Home Suite</h1>
+  <body data-condition="sunny">
 
-      <nav class="grid" aria-label="Applications">
-        <a href="/home-radar/" class="card card--radar">
-          <div class="card-icon-wrap">🗺️</div>
-          <span class="card-label">HomeRadar</span>
-          <span class="card-arrow">›</span>
-        </a>
-        <a href="/notes/" class="card card--notes">
-          <div class="card-icon-wrap">🛒</div>
-          <span class="card-label">Courses</span>
-          <span class="card-arrow">›</span>
-        </a>
-        <a href="/watchlist/" class="card card--watch">
-          <div class="card-icon-wrap">🎬</div>
-          <span class="card-label">Watchlist</span>
-          <span class="card-arrow">›</span>
-        </a>
-      </nav>
+    <!-- Fixed weather background -->
+    <div id="weather-bg">
+      <div id="sky"></div>
+      <div id="cloud-layer"></div>
+      <canvas id="particles"></canvas>
     </div>
 
-    <script>
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/sw.js").catch(() => {});
-      }
-    </script>
+    <!-- Sun / moon — fixed top-right, clickable to toggle weather panel -->
+    <button id="sun-btn" aria-label="Afficher la météo" aria-expanded="false">
+      <div id="sun-moon"></div>
+    </button>
+
+    <!-- Weather panel — hidden by default, toggled by sun click -->
+    <div id="weather-panel" hidden>
+      <div class="wi-main">
+        <span id="w-icon">🌡️</span>
+        <span id="w-temp">--°</span>
+        <div class="wi-right">
+          <span id="w-desc">—</span>
+          <span id="w-feels"></span>
+        </div>
+      </div>
+      <div class="wi-details">
+        <span id="w-wind">—</span>
+        <span id="w-sun"></span>
+      </div>
+
+      <section class="forecast-section" aria-label="Prévisions 7 jours">
+        <div class="forecast-meta">
+          <span class="forecast-label">Prévisions</span>
+          <button id="metric-toggle" class="metric-toggle">🌡 Temp</button>
+        </div>
+        <div class="forecast-nav">
+          <button id="prev-day" class="nav-arrow" aria-label="Précédent">‹</button>
+          <div id="forecast-track"></div>
+          <button id="next-day" class="nav-arrow" aria-label="Suivant">›</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- House image + SVG zone overlay -->
+    <div class="house-wrap" aria-hidden="true">
+      <!--
+        .house-inner is sized to the image's exact aspect ratio (1000:970) via CSS
+        min() so it equals the rendered image frame at every screen size.
+        The SVG (viewBox="0 0 1000 970") then overlays it perfectly — no JS needed.
+      -->
+      <div class="house-inner">
+      <img id="house-img" src="/home.png" alt="" draggable="false" />
+
+      <!--
+        SVG viewBox matches home.png natural size (1000×970).
+        Polygons scale automatically with the image via CSS width/height 100%.
+        Points converted from imagemap coords (x,y,x,y,...) to SVG (x,y x,y ...).
+      -->
+      <svg class="house-map" viewBox="0 0 836 1036" aria-hidden="true">
+
+        <!-- Courses — doorway/pantry area -->
+        <polygon
+          class="zone"
+          role="link"
+          aria-label="Courses"
+          tabindex="0"
+          data-href="/notes/"
+          points="278,418 275,602 356,605 356,415"
+          style="animation-delay: 0s"
+        />
+        <text class="zone-label" x="316" y="528">🧺 Courses</text>
+
+        <!-- Watchlist — living room / TV area -->
+        <polygon
+          class="zone"
+          role="link"
+          aria-label="Watchlist"
+          tabindex="0"
+          data-href="/watchlist/"
+          points="589,467 702,469 705,527 703,545 729,548 732,559 683,573 680,610 674,593 596,594 573,597 573,553 592,549"
+          style="animation-delay: 1s"
+        />
+        <text class="zone-label" x="656" y="545">🎬 Watchlist</text>
+
+        <!-- HomeRadar — window/lookout area -->
+        <polygon
+          class="zone"
+          role="link"
+          aria-label="HomeRadar"
+          tabindex="0"
+          data-href="/home-radar/"
+          points="299,136 316,123 337,122 358,128 371,136 379,159 377,187 358,207 330,215 313,205 296,187 290,162"
+          style="animation-delay: 2s"
+        />
+        <text class="zone-label" x="335" y="172">🗺️ Radar</text>
+
+      </svg>
+      </div><!-- /.house-inner -->
+    </div><!-- /.house-wrap -->
+
+    <script type="module" src="/home.js"></script>
   </body>
 </html>

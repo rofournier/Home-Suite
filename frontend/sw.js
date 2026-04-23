@@ -1,13 +1,18 @@
 // Home Suite root service worker — scope: /
 // Only caches homepage assets; sub-apps have their own SWs.
 
-const CACHE = "home-suite-v2";
+const CACHE = "home-suite-v4";
 const SHELL = [
   "/",
   "/manifest.webmanifest",
   "/icons/icon-192.svg",
   "/icons/icon-512.svg",
   "/shared/notifications.js",
+  "/home.js",
+  "/weather.js",
+  "/weather-bg.js",
+  "/home.png",
+  "/legacy",
 ];
 
 self.addEventListener("install", (event) => {
@@ -29,7 +34,7 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(event.request.url);
 
-  // Let sub-app SWs handle their own scopes — only handle root scope here
+  // Sub-app SWs handle their own scopes
   if (
     url.pathname.startsWith("/home-radar/") ||
     url.pathname.startsWith("/notes/") ||
@@ -37,6 +42,9 @@ self.addEventListener("fetch", (event) => {
   ) {
     return;
   }
+
+  // External APIs (Open-Meteo) go directly to network — never cache
+  if (url.hostname !== self.location.hostname) return;
 
   event.respondWith(
     caches.match(event.request).then(

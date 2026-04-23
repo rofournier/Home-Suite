@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home Suite</title>
+    <meta name="theme-color" content="#0d47a1" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Home Suite" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      html, body {
+        height: 100%;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        color: #fff;
+        overflow-x: hidden;
+      }
+
+      /* ── Weather background ─────────────────────── */
+
+      #weather-bg {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+      }
+
+      #sky {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, #1565c0, #42a5f5, #bbdefb);
+        transition: background 1.2s ease;
+      }
+
+      /* Bottom vignette so app cards are always readable */
+      #sky::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.55) 100%);
+      }
+
+      #sun-moon, #cloud-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      #particles {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      /* ── Sun & Moon — positioned inside .weather-inline ── */
+
+      /* Container sits inside the header as an overlay */
+      #sun-moon {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: visible;
+      }
+
+      .sun {
+        position: absolute;
+        /* Vertically centred in the header, right-aligned */
+        top: 50%;
+        right: 0.6rem;
+        transform: translateY(-50%);
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 38% 38%, #fff9c4, #ffd740, #ff8f00);
+        box-shadow: 0 0 40px 18px rgba(255,185,0,.42), 0 0 85px 45px rgba(255,120,0,.18);
+        animation: sunPulse 5s ease-in-out infinite;
+      }
+      @keyframes sunPulse {
+        0%,100% {
+          transform: translateY(-50%) scale(1);
+          box-shadow: 0 0 40px 18px rgba(255,185,0,.42), 0 0 85px 45px rgba(255,120,0,.18);
+        }
+        50% {
+          transform: translateY(-50%) scale(1.05);
+          box-shadow: 0 0 58px 26px rgba(255,185,0,.52), 0 0 110px 60px rgba(255,120,0,.22);
+        }
+      }
+
+      .moon {
+        position: absolute;
+        top: 50%;
+        right: 0.8rem;
+        transform: translateY(-50%);
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 38% 38%, #f5f5e0, #e0e0c0, #c8c8a0);
+        box-shadow: 0 0 28px 12px rgba(220,220,170,.28), 0 0 60px 30px rgba(200,200,150,.12);
+        animation: moonGlow 7s ease-in-out infinite;
+      }
+      @keyframes moonGlow {
+        0%,100% { box-shadow: 0 0 28px 12px rgba(220,220,170,.28), 0 0 60px 30px rgba(200,200,150,.12); }
+        50%      { box-shadow: 0 0 42px 18px rgba(220,220,170,.38), 0 0 80px 42px rgba(200,200,150,.18); }
+      }
+
+      /* ── Clouds ─────────────────────────────────── */
+
+      .cloud {
+        position: absolute;
+        left: 0;
+        border-radius: 999px;
+        background: rgba(255,255,255,.78);
+        filter: blur(14px);
+        animation: cloudDrift linear infinite;
+        will-change: transform;
+      }
+      .cloud::before, .cloud::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        background: inherit;
+      }
+      .cloud::before {
+        width: 46%;
+        aspect-ratio: 1;
+        top: -42%;
+        left: 20%;
+      }
+      .cloud::after {
+        width: 36%;
+        aspect-ratio: 1;
+        top: -28%;
+        left: 52%;
+      }
+      @keyframes cloudDrift {
+        from { transform: translateX(-35vw); }
+        to   { transform: translateX(125vw); }
+      }
+
+      /* ── Page content ───────────────────────────── */
+
+      .page {
+        position: relative;
+        z-index: 1;
+        min-height: 100svh;
+        display: flex;
+        flex-direction: column;
+        padding: env(safe-area-inset-top, 1.2rem) 1.1rem 1.2rem;
+        gap: 0.75rem;
+      }
+
+      /* ── Page title ─────────────────────────────── */
+
+      .page-title {
+        flex-shrink: 0;
+        font-size: 0.82rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        opacity: 0.55;
+        text-shadow: 0 1px 4px rgba(0,0,0,.35);
+      }
+
+      /* ── Weather inline — left side, sun is right-aligned inside ── */
+
+      .weather-inline {
+        flex-shrink: 0;
+        position: relative;       /* sun-moon positions itself here */
+        overflow: visible;        /* let sun glow bleed out */
+        min-height: 5.4rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.35rem;
+        /* Leave the right side clear — sun is 70px + 0.6rem margin */
+        padding-right: calc(70px + 1.6rem);
+      }
+
+      .wi-main {
+        display: flex;
+        align-items: center;
+        gap: 0.42rem;
+      }
+
+      #w-icon {
+        font-size: 1.9rem;
+        line-height: 1;
+        flex-shrink: 0;
+        filter: drop-shadow(0 1px 4px rgba(0,0,0,.3));
+      }
+
+      #w-temp {
+        font-size: 2.4rem;
+        font-weight: 200;
+        letter-spacing: -0.05em;
+        line-height: 1;
+        text-shadow: 0 1px 6px rgba(0,0,0,.25);
+      }
+
+      .wi-right {
+        display: flex;
+        flex-direction: column;
+        gap: 0.06rem;
+      }
+
+      #w-desc {
+        font-size: 0.88rem;
+        font-weight: 600;
+        line-height: 1.2;
+        text-shadow: 0 1px 3px rgba(0,0,0,.3);
+      }
+
+      #w-feels {
+        font-size: 0.72rem;
+        opacity: 0.6;
+        line-height: 1;
+      }
+
+      .wi-details {
+        display: flex;
+        gap: 0.75rem;
+        font-size: 0.76rem;
+        font-weight: 500;
+        opacity: 0.75;
+      }
+
+      #w-wind, #w-sun { text-shadow: 0 1px 3px rgba(0,0,0,.3); }
+
+      /* ── Forecast ───────────────────────────────── */
+
+      .forecast-section {
+        background: rgba(0,0,0,.28);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,.14);
+        border-radius: 18px;
+        padding: 0.8rem 0.7rem 0.75rem;
+        flex-shrink: 0;
+      }
+
+      .forecast-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.65rem;
+        padding: 0 0.2rem;
+      }
+
+      .forecast-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        opacity: 0.65;
+      }
+
+      .metric-toggle {
+        border: 1px solid rgba(255,255,255,.25);
+        background: rgba(255,255,255,.12);
+        color: #fff;
+        border-radius: 999px;
+        padding: 0.22rem 0.65rem;
+        font-size: 0.74rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .forecast-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      .nav-arrow {
+        flex-shrink: 0;
+        border: 1px solid rgba(255,255,255,.2);
+        background: rgba(255,255,255,.1);
+        color: #fff;
+        border-radius: 50%;
+        width: 1.8rem;
+        height: 1.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      #forecast-track {
+        display: flex;
+        gap: 0.4rem;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        flex: 1;
+      }
+      #forecast-track::-webkit-scrollbar { display: none; }
+
+      .fc-day {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.22rem;
+        background: rgba(255,255,255,.1);
+        border-radius: 12px;
+        padding: 0.5rem 0.55rem;
+        min-width: 62px;
+        scroll-snap-align: start;
+      }
+
+      .fc-today {
+        background: rgba(255,255,255,.2);
+        border: 1px solid rgba(255,255,255,.3);
+      }
+
+      .fc-name {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        opacity: 0.75;
+      }
+
+      .fc-icon { font-size: 1.35rem; line-height: 1; }
+
+      .fc-val {
+        display: flex;
+        gap: 0.3rem;
+        align-items: baseline;
+        font-size: 0.82rem;
+        font-weight: 600;
+      }
+
+      .fc-max { opacity: 1; }
+      .fc-min { opacity: 0.55; }
+      .fc-precip { font-size: 0.8rem; }
+      .fc-precip small { font-size: 0.62rem; opacity: 0.7; margin-left: 1px; }
+
+      /* ── App grid ───────────────────────────────── */
+
+      .apps-grid {
+        flex-shrink: 0;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.6rem;
+      }
+
+      /*
+       * CSS variable --a controls opacity and adapts to sky brightness.
+       * Set on body[data-condition] so there's zero JS runtime cost —
+       * just one attribute selector read per repaint.
+       */
+      .app-card { --a: .55; }
+
+      body[data-condition="sunny"]  .app-card { --a: .72; }
+      body[data-condition="cloudy"] .app-card { --a: .65; }
+      body[data-condition="overcast"] .app-card,
+      body[data-condition="rain"]     .app-card,
+      body[data-condition="snow"]     .app-card,
+      body[data-condition="night"]    .app-card { --a: .50; }
+
+      .app-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        height: 5.5rem;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,.28);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        text-decoration: none;
+        color: #fff;
+        text-align: center;
+        transition: transform .16s, background .16s;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        box-shadow: 0 6px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.18);
+      }
+
+      /* Each accent uses --a for opacity — automatically adapts to sky */
+      .app-card--radar { background: rgba( 30, 80,200, var(--a)); border-color: rgba(147,197,253,.4); }
+      .app-card--notes { background: rgba(160,100,  8, var(--a)); border-color: rgba(253,211, 77,.4); }
+      .app-card--watch { background: rgba(100, 30,180, var(--a)); border-color: rgba(196,181,253,.4); }
+
+      .app-card:active { transform: scale(0.94); box-shadow: 0 2px 12px rgba(0,0,0,.3); }
+
+      @media (hover: hover) {
+        .app-card--radar:hover { background: rgba( 30, 80,200, calc(var(--a) + .12)); transform: translateY(-2px); }
+        .app-card--notes:hover { background: rgba(160,100,  8, calc(var(--a) + .12)); transform: translateY(-2px); }
+        .app-card--watch:hover { background: rgba(100, 30,180, calc(var(--a) + .12)); transform: translateY(-2px); }
+      }
+
+      .app-icon {
+        font-size: 2rem;
+        line-height: 1;
+        filter: drop-shadow(0 2px 5px rgba(0,0,0,.35));
+      }
+
+      .app-name {
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        text-shadow: 0 1px 4px rgba(0,0,0,.5);
+      }
+
+      /* ── Desktop ────────────────────────────────── */
+
+      @media (min-width: 600px) {
+        .page { max-width: 400px; margin: 0 auto; }
+      }
+    </style>
+  </head>
+  <body data-condition="sunny">
+
+    <!-- Fixed weather background (sky + clouds + particles only) -->
+    <div id="weather-bg">
+      <div id="sky"></div>
+      <div id="cloud-layer"></div>
+      <canvas id="particles"></canvas>
+    </div>
+
+    <!-- Scrollable content -->
+    <div class="page">
+      <!-- Weather info — text left, sun/moon right (inside same container) -->
+      <header class="weather-inline" aria-label="Météo actuelle">
+        <!-- Sun or moon lives here, vertically centred, right-aligned -->
+        <div id="sun-moon"></div>
+
+        <div class="wi-main">
+          <span id="w-icon">🌡️</span>
+          <span id="w-temp">--°</span>
+          <div class="wi-right">
+            <span id="w-desc">—</span>
+            <span id="w-feels"></span>
+          </div>
+        </div>
+        <div class="wi-details">
+          <span id="w-wind">—</span>
+          <span id="w-sun"></span>
+        </div>
+      </header>
+
+      <!-- 7-day forecast -->
+      <section class="forecast-section" aria-label="Prévisions 7 jours">
+        <div class="forecast-meta">
+          <span class="forecast-label">Prévisions</span>
+          <button id="metric-toggle" class="metric-toggle">🌡 Temp</button>
+        </div>
+        <div class="forecast-nav">
+          <button id="prev-day" class="nav-arrow" aria-label="Précédent">‹</button>
+          <div id="forecast-track"></div>
+          <button id="next-day" class="nav-arrow" aria-label="Suivant">›</button>
+        </div>
+      </section>
+
+      <!-- App launcher -->
+      <nav class="apps-grid" aria-label="Applications">
+        <a href="/home-radar/" class="app-card app-card--radar">
+          <span class="app-icon">🗺️</span>
+          <span class="app-name">HomeRadar</span>
+        </a>
+        <a href="/notes/" class="app-card app-card--notes">
+          <span class="app-icon">🧺</span>
+          <span class="app-name">Courses</span>
+        </a>
+        <a href="/watchlist/" class="app-card app-card--watch">
+          <span class="app-icon">🎬</span>
+          <span class="app-name">Watchlist</span>
+        </a>
+      </nav>
+
+    </div>
+
+    <script type="module" src="/home.js"></script>
+  </body>
+</html>
