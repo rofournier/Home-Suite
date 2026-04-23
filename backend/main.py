@@ -8,8 +8,12 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from home_radar.router import router as home_radar_router
-from notes.database import Base, engine
+from notes.database import Base as NotesBase
+from notes.database import engine as notes_engine
 from notes.router import router as notes_router
+from watchlist.database import Base as WatchlistBase
+from watchlist.database import engine as watchlist_engine
+from watchlist.router import router as watchlist_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -24,13 +28,16 @@ app = FastAPI(title="Home Suite")
 
 @app.on_event("startup")
 async def startup() -> None:
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    async with notes_engine.begin() as conn:
+        await conn.run_sync(NotesBase.metadata.create_all)
+    async with watchlist_engine.begin() as conn:
+        await conn.run_sync(WatchlistBase.metadata.create_all)
 
 
 # --- Routers (registered BEFORE static mounts so they take priority) ---
 app.include_router(home_radar_router, prefix="/home-radar")
 app.include_router(notes_router, prefix="/notes")
+app.include_router(watchlist_router, prefix="/watchlist")
 
 
 # --- Root-level static files (explicit routes first) ---
@@ -76,4 +83,9 @@ app.mount(
     "/notes",
     StaticFiles(directory=FRONTEND_DIR / "notes", html=True),
     name="notes_static",
+)
+app.mount(
+    "/watchlist",
+    StaticFiles(directory=FRONTEND_DIR / "watchlist", html=True),
+    name="watchlist_static",
 )

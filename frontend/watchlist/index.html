@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Watchlist</title>
+    <meta name="theme-color" content="#2d1b49" />
+    <link rel="manifest" href="/watchlist/manifest.webmanifest" />
+    <link rel="stylesheet" href="/watchlist/style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="toolbar">
+        <div class="header-top">
+          <h1>Watchlist</h1>
+          <button type="button" id="add-btn" class="chip primary add-btn-header">+ Ajouter</button>
+        </div>
+        <div class="toolbar-row" role="tablist" aria-label="Filtre type">
+          <button type="button" class="chip active" data-kind="all">Tout</button>
+          <button type="button" class="chip" data-kind="film">Films</button>
+          <button type="button" class="chip" data-kind="serie">Series</button>
+        </div>
+        <div class="toolbar-row">
+          <button type="button" id="view-toggle" class="chip" data-view="todo">A voir</button>
+          <button type="button" id="sort-toggle" class="chip sort-chip">Tri: Date</button>
+        </div>
+      </header>
+
+      <section id="list" class="list" aria-live="polite"></section>
+    </main>
+
+    <div id="offline-banner" class="offline-banner hidden" role="status">
+      Hors ligne — données locales, lecture seule
+    </div>
+
+    <a href="/" class="back-home" title="Menu">⌂</a>
+    <script type="module" src="/watchlist/app.js"></script>
+  </body>
+</html>

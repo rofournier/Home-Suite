@@ -1,7 +1,7 @@
 // Home Suite root service worker — scope: /
 // Only caches homepage assets; sub-apps have their own SWs.
 
-const CACHE = "home-suite-v1";
+const CACHE = "home-suite-v2";
 const SHELL = [
   "/",
   "/manifest.webmanifest",
@@ -30,7 +30,13 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
   // Let sub-app SWs handle their own scopes — only handle root scope here
-  if (url.pathname.startsWith("/home-radar/") || url.pathname.startsWith("/notes/")) return;
+  if (
+    url.pathname.startsWith("/home-radar/") ||
+    url.pathname.startsWith("/notes/") ||
+    url.pathname.startsWith("/watchlist/")
+  ) {
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request).then(

@@ -26,6 +26,10 @@
         --notes-bg-hover: #fef08a;
         --notes-border: #fde68a;
         --notes-icon-bg: #fffbeb;
+        --watch-bg: #e9d5ff;
+        --watch-bg-hover: #d8b4fe;
+        --watch-border: #c084fc;
+        --watch-icon-bg: #f5ebff;
         --shadow: 0 2px 12px rgba(180, 130, 80, 0.13);
         --shadow-hover: 0 8px 32px rgba(180, 130, 80, 0.22);
       }
@@ -101,6 +105,11 @@
         border-color: var(--notes-border);
       }
 
+      .card--watch {
+        background: var(--watch-bg);
+        border-color: var(--watch-border);
+      }
+
       @media (hover: hover) {
         .card--radar:hover {
           background: var(--radar-bg-hover);
@@ -109,6 +118,11 @@
         }
         .card--notes:hover {
           background: var(--notes-bg-hover);
+          transform: translateY(-2px) scale(1.01);
+          box-shadow: var(--shadow-hover);
+        }
+        .card--watch:hover {
+          background: var(--watch-bg-hover);
           transform: translateY(-2px) scale(1.01);
           box-shadow: var(--shadow-hover);
         }
@@ -132,6 +146,7 @@
 
       .card--radar .card-icon-wrap { background: var(--radar-icon-bg); }
       .card--notes .card-icon-wrap { background: var(--notes-icon-bg); }
+      .card--watch .card-icon-wrap { background: var(--watch-icon-bg); }
 
       .card-label {
         font-size: 1.2rem;
@@ -165,6 +180,11 @@
         <a href="/notes/" class="card card--notes">
           <div class="card-icon-wrap">🛒</div>
           <span class="card-label">Courses</span>
+          <span class="card-arrow">›</span>
+        </a>
+        <a href="/watchlist/" class="card card--watch">
+          <div class="card-icon-wrap">🎬</div>
+          <span class="card-label">Watchlist</span>
           <span class="card-arrow">›</span>
         </a>
       </nav>

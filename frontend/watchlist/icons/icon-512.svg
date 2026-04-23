@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Watchlist icon">
+  <defs>
+    <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#3e2362" />
+      <stop offset="1" stop-color="#1a0d2f" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="102" fill="url(#g1)" />
+  <rect x="80" y="112" width="352" height="288" rx="32" fill="#f9f5ff" opacity="0.14" />
+  <path d="M148 190h212v38H148zm0 66h212v38H148zm0 66h138v38H148z" fill="#f9f5ff" />
+  <circle cx="382" cy="336" r="48" fill="#ff5d8f" />
+  <path d="M382 309l10.2 20.5 22.6 3.3-16.4 15.9 3.9 22.4-20.3-10.6-20.2 10.6 3.8-22.4-16.3-15.9 22.6-3.3z" fill="#fff3b0" />
+</svg>
