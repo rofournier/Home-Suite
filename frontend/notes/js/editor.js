@@ -1,10 +1,13 @@
 import { notifyAlarm, showToast } from "./alarm.js";
 import { apiRequest } from "./offline-queue.js";
 
+const SHEET_CACHE_KEY = "notes_sheet_cache_v1";
+
 export class EditorController {
   constructor(socketClient) {
     this.socket = socketClient;
     this.lines = [];
+    this.isOffline = false;
     this.linesRoot = document.getElementById("lines");
     this.seenEvents = new Set();
     this.pendingSyncTimers = new Map();
@@ -12,10 +15,19 @@ export class EditorController {
   }
 
   async bootstrap() {
-    const response = await apiRequest("/notes/api/sheet");
-    const data = await response.json();
+    let data;
+    try {
+      const response = await apiRequest("/notes/api/sheet");
+      data = await response.json();
+      try { localStorage.setItem(SHEET_CACHE_KEY, JSON.stringify(data)); } catch {}
+      this.isOffline = false;
+    } catch {
+      const raw = localStorage.getItem(SHEET_CACHE_KEY);
+      data = raw ? JSON.parse(raw) : { lines: [] };
+      this.isOffline = true;
+    }
     this.lines = data.lines;
-    if (this.lines.length === 0) {
+    if (this.lines.length === 0 && !this.isOffline) {
       await this.createLine(null, "", false);
       return;
     }
@@ -56,6 +68,7 @@ export class EditorController {
 
     if (event.type === "resync") {
       this.lines = event.payload.lines || [];
+      try { localStorage.setItem(SHEET_CACHE_KEY, JSON.stringify({ lines: this.lines })); } catch {}
       this.render();
     }
   }
@@ -251,6 +264,10 @@ export class EditorController {
       await this.flushLineSync(line.id);
     });
 
+    if (this.isOffline) {
+      input.readOnly = true;
+    }
+
     const actions = document.createElement("div");
     actions.className = "inline-actions";
 
@@ -259,12 +276,16 @@ export class EditorController {
     deleteBtn.className = "icon-btn";
     deleteBtn.textContent = "🗑️";
     deleteBtn.title = "Supprimer";
-    deleteBtn.addEventListener("click", async () => {
-      await this.deleteLine(line.id);
-      if (this.lines.length === 0) {
-        await this.createLine(null, "", true);
-      }
-    });
+    if (this.isOffline) {
+      deleteBtn.disabled = true;
+    } else {
+      deleteBtn.addEventListener("click", async () => {
+        await this.deleteLine(line.id);
+        if (this.lines.length === 0) {
+          await this.createLine(null, "", true);
+        }
+      });
+    }
 
     actions.append(deleteBtn);
     row.append(input, actions);

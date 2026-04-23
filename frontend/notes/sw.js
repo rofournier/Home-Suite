@@ -1,4 +1,4 @@
-const CACHE_NAME = "courses-shell-v2";
+const CACHE_NAME = "courses-shell-v3";
 const APP_SHELL = [
   "/notes/",
   "/notes/index.html",
@@ -44,7 +44,17 @@ self.addEventListener("fetch", (event) => {
           }
           return response;
         })
-        .catch(() => cached || caches.match("/notes/index.html"));
+        .catch(() => {
+          if (cached) return cached;
+          const url = new URL(event.request.url);
+          if (url.pathname.startsWith("/notes/api/")) {
+            return new Response(JSON.stringify({ lines: [] }), {
+              status: 503,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          return caches.match("/notes/index.html");
+        });
 
       return cached || networkFetch;
     }),

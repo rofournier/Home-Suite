@@ -10,6 +10,12 @@ const wsUrl = `${wsProtocol}://${window.location.host}/notes/ws/sheet/main`;
 let connectedCount = 1;
 const presenceEl = document.getElementById("presence");
 const presenceAvatars = document.getElementById("presence-avatars");
+const offlineBanner = document.getElementById("offline-banner");
+
+function setOfflineMode(offline) {
+  document.body.classList.toggle("offline", offline);
+  if (offlineBanner) offlineBanner.classList.toggle("hidden", !offline);
+}
 
 function renderPresence() {
   presenceEl.textContent = `${connectedCount}`;
@@ -39,6 +45,7 @@ const socket = new SocketClient(
 
 const editor = new EditorController(socket);
 await editor.bootstrap();
+setOfflineMode(editor.isOffline);
 socket.connect();
 renderPresence();
 
@@ -72,7 +79,12 @@ async function replayOfflineMutations() {
   }
 }
 
-window.addEventListener("online", replayOfflineMutations);
+window.addEventListener("online", () => {
+  setOfflineMode(false);
+  replayOfflineMutations();
+});
+
+window.addEventListener("offline", () => setOfflineMode(true));
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/notes/sw.js").catch(() => {});

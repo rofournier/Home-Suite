@@ -1,4 +1,4 @@
-const CACHE_NAME = "homeradar-v2";
+const CACHE_NAME = "homeradar-v3";
 const APP_SHELL = [
   "/home-radar/",
   "/home-radar/index.html",

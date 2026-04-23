@@ -168,3 +168,34 @@ h1 {
   background: rgba(0, 0, 0, 0.18);
   color: rgba(0, 0, 0, 0.75);
 }
+
+.offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9000;
+  background: #f59e0b;
+  color: #1c1400;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  letter-spacing: 0.01em;
+}
+
+.offline-banner.hidden { display: none; }
+
+body.offline .line__input {
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+body.offline .icon-btn {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+body.offline .alarm-btn {
+  display: none;
+}

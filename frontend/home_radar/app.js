@@ -1,5 +1,7 @@
 import { showToast, triggerPing, requestNotifPermission } from "/shared/notifications.js";
 
+const TASKS_CACHE_KEY = "home_radar_tasks_v1";
+
 const TASK_TYPES = [
   { id: "linge", emoji: "🧺", label: "Linge" },
   { id: "vaisselle", emoji: "🍽️", label: "Vaisselle" },
@@ -42,6 +44,7 @@ const bgSelect = document.getElementById("background-select");
 const urgencyBtns = Array.from(document.querySelectorAll(".urgency-btn"));
 
 let ws = null;
+let isOffline = true;
 let animationId = null;
 let bgParticles = [];
 let bgClouds = [];
@@ -57,9 +60,14 @@ let suppressTapOpenUntil = 0;
 const emojiById = Object.fromEntries(TASK_TYPES.map((item) => [item.id, item.emoji]));
 
 function updateConnectionStatus(online) {
+  isOffline = !online;
   connectionPill.classList.toggle("online", online);
   connectionPill.classList.toggle("offline", !online);
-  connectionText.textContent = online ? "Connecté" : "Offline";
+  connectionText.textContent = online ? "Connecté" : "Hors ligne";
+  if (!online) {
+    closeDrawer();
+    closeDoneDrawer();
+  }
 }
 
 function connectWs() {
@@ -80,15 +88,18 @@ function connectWs() {
     }
     if (data.type === "init" && Array.isArray(data.tasks)) {
       state.tasks = data.tasks;
+      try { localStorage.setItem(TASKS_CACHE_KEY, JSON.stringify(data.tasks)); } catch {}
       renderMarkers();
     } else if (data.type === "add" && data.task) {
       if (!state.tasks.some((task) => task.id === data.task.id)) {
         state.tasks.push(data.task);
+        try { localStorage.setItem(TASKS_CACHE_KEY, JSON.stringify(state.tasks)); } catch {}
         renderMarkers();
         triggerPing("Nouvelle tâche !");
       }
     } else if (data.type === "done" && data.id) {
       state.tasks = state.tasks.filter((task) => task.id !== data.id);
+      try { localStorage.setItem(TASKS_CACHE_KEY, JSON.stringify(state.tasks)); } catch {}
       renderMarkers();
     }
   });
@@ -184,6 +195,10 @@ function renderMarkers() {
 }
 
 function openDrawer(coords) {
+  if (isOffline) {
+    showToast("Hors ligne — lecture seule");
+    return;
+  }
   state.drawer.open = true;
   state.drawer.x = coords.x;
   state.drawer.y = coords.y;
@@ -201,6 +216,10 @@ function closeDrawer() {
 }
 
 function openDoneDrawer(task) {
+  if (isOffline) {
+    showToast("Hors ligne — lecture seule");
+    return;
+  }
   pendingDoneTaskId = task.id;
   doneTaskLabel.textContent = `${emojiById[task.type] || ""} ${task.type} · urgence ${task.urgency}`;
   doneDrawer.classList.add("open");
@@ -552,6 +571,13 @@ function registerServiceWorker() {
 }
 
 function init() {
+  try {
+    const cached = localStorage.getItem(TASKS_CACHE_KEY);
+    if (cached) {
+      state.tasks = JSON.parse(cached);
+    }
+  } catch {}
+
   createTaskTypeButtons();
   connectWs();
   setupInteractions();
