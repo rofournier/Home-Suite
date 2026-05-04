@@ -108,84 +108,8 @@ function finishStroke() {
   currentStroke = null;
 }
 
-/**
- * Safari / PWA WebKit : (hover:none) et les Pointer Events peuvent être incohérents.
- * On enregistre toujours touch + pointer avec { passive:false }, et on déduplique
- * (touchstart puis pointerdown "touch" ~Chrome/Android).
- */
-const touchCapable =
-  typeof window !== "undefined" &&
-  ("ontouchstart" in window || (navigator.maxTouchPoints ?? 0) > 0);
-
-/** performance.now() du dernier touchstart natif (déduplication avec pointerdown touch) */
-let lastNativeTouchAt = 0;
-
-/** @type {number | null} */
-let activeTouchId = null;
-
-/**
- * Safari iOS peut ne pas rendre TouchList itérable (pas de spread/for..of fiable).
- * @param {TouchList} list
- * @param {number} id
- * @returns {Touch | null}
- */
-function findTouchById(list, id) {
-  for (let i = 0; i < list.length; i++) {
-    const t = list.item(i);
-    if (t && t.identifier === id) return t;
-  }
-  return null;
-}
-
-function onTouchStart(e) {
-  if (e.touches.length !== 1) return;
-  e.preventDefault();
-  lastNativeTouchAt = performance.now();
-  const t = e.touches[0];
-  activeTouchId = t.identifier;
-  beginStroke(t.clientX, t.clientY);
-}
-
-function onTouchMove(e) {
-  if (activeTouchId === null) return;
-  e.preventDefault();
-  const t = findTouchById(e.touches, activeTouchId);
-  if (!t) return;
-  extendStroke(t.clientX, t.clientY);
-}
-
-function onTouchEnd(e) {
-  if (activeTouchId === null) return;
-  const lift = findTouchById(e.changedTouches, activeTouchId);
-  if (!lift) return;
-  e.preventDefault();
-  extendStroke(lift.clientX, lift.clientY);
-  activeTouchId = null;
-  finishStroke();
-}
-
-function onTouchCancel() {
-  activeTouchId = null;
-  finishStroke();
-}
-
 function onPointerDown(e) {
   if (e.pointerType === "mouse" && e.button !== 0) return;
-  if (e.pointerType === "touch") {
-    const sinceNativeTouch =
-      lastNativeTouchAt > 0 ? performance.now() - lastNativeTouchAt : Infinity;
-    if (sinceNativeTouch < 55) {
-      return;
-    }
-    e.preventDefault();
-    try {
-      canvas.setPointerCapture(e.pointerId);
-    } catch {
-      /* ignore */
-    }
-    beginStroke(e.clientX, e.clientY);
-    return;
-  }
   e.preventDefault();
   try {
     canvas.setPointerCapture(e.pointerId);
@@ -197,31 +121,12 @@ function onPointerDown(e) {
 
 function onPointerMove(e) {
   if (!currentStroke) return;
-  if (e.pointerType === "touch" && activeTouchId !== null) {
-    return;
-  }
   e.preventDefault();
   extendStroke(e.clientX, e.clientY);
 }
 
 function onPointerUp(e) {
-  if (e.pointerType === "touch" && activeTouchId !== null) {
-    try {
-      canvas.releasePointerCapture(e.pointerId);
-    } catch {
-      /* ignore */
-    }
-    return;
-  }
-  if (!currentStroke) {
-    try {
-      canvas.releasePointerCapture(e.pointerId);
-    } catch {
-      /* ignore */
-    }
-    return;
-  }
-  finishStroke();
+  if (currentStroke) finishStroke();
   try {
     canvas.releasePointerCapture(e.pointerId);
   } catch {
@@ -230,9 +135,6 @@ function onPointerUp(e) {
 }
 
 function onPointerCancel(e) {
-  if (e.pointerType === "touch" && activeTouchId !== null) {
-    return;
-  }
   finishStroke();
   try {
     canvas.releasePointerCapture(e.pointerId);
@@ -431,17 +333,43 @@ function bind() {
     lineWidth = Math.max(1, Math.min(64, v));
   });
 
-  if (touchCapable) {
-    canvas.addEventListener("touchstart", onTouchStart, { passive: false });
-    canvas.addEventListener("touchmove", onTouchMove, { passive: false });
-    canvas.addEventListener("touchend", onTouchEnd, { passive: false });
-    canvas.addEventListener("touchcancel", onTouchCancel, { passive: false });
+  if (window.PointerEvent) {
+    canvas.addEventListener("pointerdown", onPointerDown, { passive: false });
+    canvas.addEventListener("pointermove", onPointerMove, { passive: false });
+    canvas.addEventListener("pointerup", onPointerUp, { passive: false });
+    canvas.addEventListener("pointercancel", onPointerCancel, { passive: false });
+    canvas.addEventListener("pointerleave", onPointerUp, { passive: false });
+  } else {
+    canvas.addEventListener("touchstart", (e) => {
+      if (e.touches.length !== 1) return;
+      e.preventDefault();
+      const t = e.touches[0];
+      beginStroke(t.clientX, t.clientY);
+    }, { passive: false });
+    canvas.addEventListener("touchmove", (e) => {
+      if (!currentStroke || e.touches.length < 1) return;
+      e.preventDefault();
+      const t = e.touches[0];
+      extendStroke(t.clientX, t.clientY);
+    }, { passive: false });
+    canvas.addEventListener("touchend", (e) => {
+      if (!currentStroke) return;
+      e.preventDefault();
+      finishStroke();
+    }, { passive: false });
+    canvas.addEventListener("touchcancel", () => finishStroke(), { passive: false });
+    canvas.addEventListener("mousedown", (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      beginStroke(e.clientX, e.clientY);
+    });
+    canvas.addEventListener("mousemove", (e) => {
+      if (!currentStroke) return;
+      e.preventDefault();
+      extendStroke(e.clientX, e.clientY);
+    });
+    window.addEventListener("mouseup", () => finishStroke());
   }
-  canvas.addEventListener("pointerdown", onPointerDown, { passive: false });
-  canvas.addEventListener("pointermove", onPointerMove, { passive: false });
-  canvas.addEventListener("pointerup", onPointerUp, { passive: false });
-  canvas.addEventListener("pointercancel", onPointerCancel, { passive: false });
-  canvas.addEventListener("pointerleave", onPointerUp, { passive: false });
   bindPalette();
 
   if (canvasFit && typeof ResizeObserver !== "undefined") {
