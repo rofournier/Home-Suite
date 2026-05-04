@@ -123,6 +123,20 @@ let lastNativeTouchAt = 0;
 /** @type {number | null} */
 let activeTouchId = null;
 
+/**
+ * Safari iOS peut ne pas rendre TouchList itérable (pas de spread/for..of fiable).
+ * @param {TouchList} list
+ * @param {number} id
+ * @returns {Touch | null}
+ */
+function findTouchById(list, id) {
+  for (let i = 0; i < list.length; i++) {
+    const t = list.item(i);
+    if (t && t.identifier === id) return t;
+  }
+  return null;
+}
+
 function onTouchStart(e) {
   if (e.touches.length !== 1) return;
   e.preventDefault();
@@ -135,14 +149,14 @@ function onTouchStart(e) {
 function onTouchMove(e) {
   if (activeTouchId === null) return;
   e.preventDefault();
-  const t = [...e.touches].find((p) => p.identifier === activeTouchId);
+  const t = findTouchById(e.touches, activeTouchId);
   if (!t) return;
   extendStroke(t.clientX, t.clientY);
 }
 
 function onTouchEnd(e) {
   if (activeTouchId === null) return;
-  const lift = [...e.changedTouches].find((p) => p.identifier === activeTouchId);
+  const lift = findTouchById(e.changedTouches, activeTouchId);
   if (!lift) return;
   e.preventDefault();
   extendStroke(lift.clientX, lift.clientY);
