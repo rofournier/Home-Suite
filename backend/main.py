@@ -7,6 +7,9 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from draw.database import Base as DrawBase
+from draw.database import engine as draw_engine
+from draw.router import router as draw_router
 from home_radar.router import router as home_radar_router
 from notes.database import Base as NotesBase
 from notes.database import engine as notes_engine
@@ -32,12 +35,15 @@ async def startup() -> None:
         await conn.run_sync(NotesBase.metadata.create_all)
     async with watchlist_engine.begin() as conn:
         await conn.run_sync(WatchlistBase.metadata.create_all)
+    async with draw_engine.begin() as conn:
+        await conn.run_sync(DrawBase.metadata.create_all)
 
 
 # --- Routers (registered BEFORE static mounts so they take priority) ---
 app.include_router(home_radar_router, prefix="/home-radar")
 app.include_router(notes_router, prefix="/notes")
 app.include_router(watchlist_router, prefix="/watchlist")
+app.include_router(draw_router, prefix="/draw")
 
 
 # --- Root-level static files (explicit routes first) ---
@@ -82,6 +88,11 @@ async def root_weather_bg_js() -> FileResponse:
     return FileResponse(FRONTEND_DIR / "weather-bg.js", media_type="application/javascript")
 
 
+@app.get("/draw/view")
+async def draw_view_page() -> FileResponse:
+    return FileResponse(FRONTEND_DIR / "draw" / "view.html", media_type="text/html")
+
+
 # --- Static mounts (registered LAST) ---
 
 # Shared JS utilities (notifications, etc.)
@@ -113,4 +124,9 @@ app.mount(
     "/watchlist",
     StaticFiles(directory=FRONTEND_DIR / "watchlist", html=True),
     name="watchlist_static",
+)
+app.mount(
+    "/draw",
+    StaticFiles(directory=FRONTEND_DIR / "draw", html=True),
+    name="draw_static",
 )

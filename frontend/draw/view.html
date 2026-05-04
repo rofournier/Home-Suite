@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Tableaux — Home Suite</title>
+    <meta name="theme-color" content="#2a2622" />
+    <link rel="manifest" href="/draw/manifest.webmanifest" />
+    <link rel="stylesheet" href="/draw/style.css" />
+  </head>
+  <body class="view-page">
+    <header class="view-header">
+      <a href="/" class="back-home" title="Menu">⌂</a>
+      <span class="view-header-title">Tableaux</span>
+    </header>
+
+    <main class="view-main">
+      <div id="view-empty" class="view-empty">Aucun tableau enregistré. Créez-en un depuis l’atelier.</div>
+      <div id="view-shell" class="view-shell" hidden>
+        <button type="button" class="nav-fab" id="nav-prev" aria-label="Tableau précédent">‹</button>
+        <div class="view-frame" id="view-frame">
+          <div class="view-canvas-fit" id="view-canvas-fit">
+            <div class="view-canvas-inner" id="view-canvas-inner">
+              <canvas id="view-canvas" width="800" height="1200" aria-label="Tableau"></canvas>
+            </div>
+          </div>
+          <footer class="view-plaque" aria-label="Légende">
+            <h1 class="view-title" id="v-title">—</h1>
+            <p class="view-sub" id="v-sub"></p>
+          </footer>
+        </div>
+        <button type="button" class="nav-fab" id="nav-next" aria-label="Tableau suivant">›</button>
+      </div>
+    </main>
+
+    <script type="module" src="/draw/view.js"></script>
+  </body>
+</html>

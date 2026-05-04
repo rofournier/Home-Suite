@@ -43,11 +43,18 @@ export function applyBackground(condition, isDay) {
   // Sky gradient
   sky.style.background = SKY_GRADIENTS[condition] ?? SKY_GRADIENTS.cloudy;
 
-  // Sun / moon
+  // Sun / moon — always render something so the toggle button stays clickable
   sunMoon.innerHTML = "";
-  if (condition !== "rain" && condition !== "overcast" && condition !== "snow") {
+  const hasCelestialBody = condition !== "rain" && condition !== "overcast" && condition !== "snow";
+  if (hasCelestialBody) {
     const el = document.createElement("div");
     el.className = !isDay || condition === "night" ? "moon" : "sun";
+    sunMoon.appendChild(el);
+  } else {
+    const CONDITION_ICONS = { overcast: "☁️", rain: "🌧️", snow: "❄️" };
+    const el = document.createElement("span");
+    el.className = "weather-icon";
+    el.textContent = CONDITION_ICONS[condition] ?? "🌡️";
     sunMoon.appendChild(el);
   }
 

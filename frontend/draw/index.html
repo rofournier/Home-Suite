@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <title>Dessin — Home Suite</title>
+    <meta name="theme-color" content="#e8ddd0" />
+    <link rel="manifest" href="/draw/manifest.webmanifest" />
+    <link rel="stylesheet" href="/draw/style.css" />
+  </head>
+  <body class="draw-app">
+    <header class="app-header">
+      <a href="/" class="back-home" title="Menu">⌂</a>
+      <div class="header-actions">
+        <button type="button" class="btn" id="btn-new">Nouveau</button>
+        <button type="button" class="btn" id="btn-library">Dessins</button>
+        <button type="button" class="btn btn-primary" id="btn-save">Enregistrer</button>
+      </div>
+    </header>
+
+    <div class="toolbar" aria-label="Outils">
+      <div class="palette" id="palette" role="group" aria-label="Couleurs">
+        <button type="button" class="swatch" data-color="#2d2a26" style="background:#2d2a26" aria-pressed="true" title="Encre"></button>
+        <button type="button" class="swatch" data-color="#c62828" style="background:#c62828" aria-pressed="false" title="Rouge"></button>
+        <button type="button" class="swatch" data-color="#3d6b4a" style="background:#3d6b4a" aria-pressed="false" title="Vert"></button>
+        <button type="button" class="swatch" data-color="#2a4d7a" style="background:#2a4d7a" aria-pressed="false" title="Bleu"></button>
+        <button type="button" class="swatch" data-color="#fdd835" style="background:#fdd835" aria-pressed="false" title="Jaune"></button>
+        <button type="button" class="swatch" data-color="#ffffff" style="background:#ffffff;border-color:#d8d0c2" aria-pressed="false" title="Blanc"></button>
+      </div>
+      <div class="width-bar">
+        <span>Trait</span>
+        <input type="range" id="width-range" min="1" max="64" value="4" />
+      </div>
+    </div>
+
+    <div class="work-area">
+      <div class="canvas-fit" id="canvas-fit">
+        <div class="canvas-inner" id="canvas-inner">
+          <canvas id="sheet" width="800" height="1200" aria-label="Zone de dessin"></canvas>
+        </div>
+      </div>
+      <div class="title-strip">
+        <label class="title-strip-label" for="title-input">Titre du dessin</label>
+        <input
+          type="text"
+          id="title-input"
+          class="title-strip-input"
+          maxlength="120"
+          placeholder="Nommer ce dessin (optionnel)"
+          autocomplete="off"
+          enterkeyhint="done"
+        />
+      </div>
+    </div>
+
+    <dialog id="library" class="panel" aria-labelledby="lib-title">
+      <div class="panel-head">
+        <span id="lib-title">Mes dessins</span>
+        <button type="button" class="btn" id="lib-close">Fermer</button>
+      </div>
+      <div class="panel-body" id="lib-list"></div>
+    </dialog>
+
+    <script type="module" src="/draw/app.js"></script>
+  </body>
+</html>

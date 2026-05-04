@@ -11,6 +11,7 @@ const _s = {
   toastEl: null,
   toastTimer: null,
   cssInjected: false,
+  confirmCssInjected: false,
 };
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
@@ -76,6 +77,130 @@ export function showToast(message, durationMs = 2200) {
   el.classList.add("hs-visible");
   clearTimeout(_s.toastTimer);
   _s.toastTimer = setTimeout(() => el.classList.remove("hs-visible"), durationMs);
+}
+
+// ── Confirm dialog (native dialog element, mobile-friendly) ─────────────────
+
+function _injectConfirmCSS() {
+  if (_s.confirmCssInjected) return;
+  _s.confirmCssInjected = true;
+  const style = document.createElement("style");
+  style.textContent = `
+    dialog.hs-confirm {
+      margin: auto;
+      padding: 0;
+      border: none;
+      border-radius: 16px;
+      max-width: min(100vw - 1.5rem, 360px);
+      width: 100%;
+      background: #fdfaf5;
+      color: #2d2a26;
+      box-shadow: 0 16px 48px rgba(45, 42, 38, 0.22);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+    dialog.hs-confirm::backdrop {
+      background: rgba(45, 42, 38, 0.4);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+    .hs-confirm-box {
+      padding: 1.1rem 1.15rem 1rem;
+    }
+    .hs-confirm-msg {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+    .hs-confirm-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      margin-top: 1.1rem;
+      flex-wrap: wrap;
+    }
+    .hs-confirm-actions button {
+      min-height: 44px;
+      min-width: 5rem;
+      padding: 0.45rem 1rem;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid rgba(45, 42, 38, 0.14);
+      background: rgba(255, 255, 255, 0.85);
+      color: #2d2a26;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .hs-confirm-actions button.hs-confirm-primary {
+      border-color: rgba(0, 0, 0, 0.08);
+      background: linear-gradient(145deg, #c45c3e, #a84a32);
+      color: #fff;
+    }
+    .hs-confirm-actions button:active {
+      transform: scale(0.97);
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+/**
+ * Affiche une boîte de confirmation (remplace window.confirm sur mobile / PWA).
+ * @param {string} message
+ * @param {{ confirmLabel?: string, cancelLabel?: string }} [options]
+ * @returns {Promise<boolean>} true = confirmer
+ */
+export function showConfirm(message, options = {}) {
+  const confirmLabel = options.confirmLabel ?? "OK";
+  const cancelLabel = options.cancelLabel ?? "Annuler";
+  return new Promise((resolve) => {
+    _injectConfirmCSS();
+    const dialog = document.createElement("dialog");
+    dialog.className = "hs-confirm";
+    dialog.setAttribute("role", "alertdialog");
+    dialog.setAttribute("aria-modal", "true");
+    dialog.innerHTML = `
+      <div class="hs-confirm-box">
+        <p class="hs-confirm-msg"></p>
+        <div class="hs-confirm-actions">
+          <button type="button" class="hs-confirm-cancel"></button>
+          <button type="button" class="hs-confirm-primary hs-confirm-ok"></button>
+        </div>
+      </div>
+    `;
+    const msgEl = dialog.querySelector(".hs-confirm-msg");
+    if (msgEl) msgEl.textContent = message;
+    const cancelBtn = dialog.querySelector(".hs-confirm-cancel");
+    const okBtn = dialog.querySelector(".hs-confirm-ok");
+    if (cancelBtn) cancelBtn.textContent = cancelLabel;
+    if (okBtn) okBtn.textContent = confirmLabel;
+
+    const finish = (v) => {
+      dialog.removeEventListener("cancel", onCancel);
+      try {
+        dialog.close();
+      } catch {
+        /* ignore */
+      }
+      dialog.remove();
+      resolve(v);
+    };
+
+    function onCancel(e) {
+      e.preventDefault();
+      finish(false);
+    }
+
+    cancelBtn?.addEventListener("click", () => finish(false));
+    okBtn?.addEventListener("click", () => finish(true));
+    dialog.addEventListener("cancel", onCancel);
+    dialog.addEventListener("click", (e) => {
+      if (e.target === dialog) finish(false);
+    });
+
+    document.body.appendChild(dialog);
+    dialog.showModal();
+    okBtn?.focus();
+  });
 }
 
 // ── Audio ─────────────────────────────────────────────────────────────────────

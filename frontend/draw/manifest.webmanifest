@@ -1,0 +1,25 @@
+{
+  "name": "Dessin — Home Suite",
+  "short_name": "Dessin",
+  "description": "Atelier de dessin cosy.",
+  "start_url": "/draw/",
+  "scope": "/draw/",
+  "display": "standalone",
+  "background_color": "#e8ddd0",
+  "theme_color": "#e8ddd0",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

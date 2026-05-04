@@ -105,6 +105,20 @@
         50%      { box-shadow: 0 0 40px 17px rgba(220,220,170,.38), 0 0 78px 40px rgba(200,200,150,.18); }
       }
 
+      /* ── Weather icon fallback (overcast / rain / snow) ─── */
+
+      .weather-icon {
+        font-size: 2.4rem;
+        line-height: 1;
+        display: block;
+        filter: drop-shadow(0 0 10px rgba(255,255,255,.35));
+        animation: weatherIconFloat 5s ease-in-out infinite;
+      }
+      @keyframes weatherIconFloat {
+        0%, 100% { transform: translateY(0);    filter: drop-shadow(0 0 10px rgba(255,255,255,.35)); }
+        50%      { transform: translateY(-3px); filter: drop-shadow(0 0 16px rgba(255,255,255,.5)); }
+      }
+
       /* ── Sun button ─────────────────────────────────────── */
 
       #sun-btn {
@@ -462,6 +476,30 @@
           style="animation-delay: 2s"
         />
         <text class="zone-label" x="335" y="172">🗺️ Radar</text>
+
+        <!-- Draw — atelier -->
+        <polygon
+          class="zone"
+          role="link"
+          aria-label="Dessin"
+          tabindex="0"
+          data-href="/draw/"
+          points="646,338 652,281 672,280 659,290 657,306 684,313 665,333 714,332 696,315 714,315 722,334 768,341 763,265 720,258 716,249 713,241 685,239 677,245 677,271 664,263 618,264 621,339"
+          style="animation-delay: 3s"
+        />
+        <text class="zone-label" x="702" y="300">🎨 Dessin</text>
+
+        <!-- Frame — cadre / galerie -->
+        <polygon
+          class="zone"
+          role="link"
+          aria-label="Tableaux"
+          tabindex="0"
+          data-href="/draw/view"
+          points="242,204 244,249 282,249 279,206"
+          style="animation-delay: 4s"
+        />
+        <text class="zone-label" x="262" y="230">🖼 Tableaux</text>
 
       </svg>
       </div><!-- /.house-inner -->
